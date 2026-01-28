@@ -1,8 +1,6 @@
-# student_management_unique.py
+# student_management_no_libs.py
 
 import streamlit as st
-import pandas as pd
-import matplotlib.pyplot as plt
 
 # ------------------- In-Memory Database -------------------
 if "students" not in st.session_state:
@@ -32,7 +30,7 @@ def search_students(query):
 
 # ------------------- Streamlit App -------------------
 st.set_page_config(page_title="🎓 Student Management System", layout="wide")
-st.title("🎓 Interactive Student Management System")
+st.title("🎓 Student Management System (No Pandas / No Matplotlib)")
 
 menu = ["Add Student", "View Students", "Update Student", "Delete Student", "Search & Stats"]
 choice = st.sidebar.selectbox("Menu", menu)
@@ -40,7 +38,7 @@ choice = st.sidebar.selectbox("Menu", menu)
 # ------------------- Add Student -------------------
 if choice == "Add Student":
     st.subheader("Add a New Student")
-    with st.form(key="add_form"):
+    with st.form("add_form"):
         name = st.text_input("Name")
         age = st.number_input("Age", min_value=1, max_value=120, step=1)
         gender = st.selectbox("Gender", ["Male", "Female", "Other"])
@@ -57,8 +55,8 @@ if choice == "Add Student":
 elif choice == "View Students":
     st.subheader("All Students")
     if st.session_state.students:
-        df = pd.DataFrame(st.session_state.students)
-        st.dataframe(df)
+        for s in st.session_state.students:
+            st.write(f"ID: {s['ID']} | Name: {s['Name']} | Age: {s['Age']} | Gender: {s['Gender']} | Course: {s['Course']}")
     else:
         st.info("No students found.")
 
@@ -70,8 +68,8 @@ elif choice == "Update Student":
         selected = st.selectbox("Select Student to Update", student_list)
         student_id = int(selected.split(" - ")[0])
         student = next(s for s in st.session_state.students if s["ID"] == student_id)
-        
-        with st.form(key="update_form"):
+
+        with st.form("update_form"):
             name = st.text_input("Name", student["Name"])
             age = st.number_input("Age", min_value=1, max_value=120, step=1, value=student["Age"])
             gender = st.selectbox("Gender", ["Male", "Female", "Other"], index=["Male","Female","Other"].index(student["Gender"]))
@@ -96,7 +94,7 @@ elif choice == "Delete Student":
     else:
         st.info("No students to delete.")
 
-# ------------------- Search & Statistics -------------------
+# ------------------- Search & Stats -------------------
 elif choice == "Search & Stats":
     st.subheader("Search Students")
     query = st.text_input("Enter Name or Course to Search")
@@ -104,18 +102,16 @@ elif choice == "Search & Stats":
         results = search_students(query)
         if results:
             st.success(f"Found {len(results)} result(s)")
-            st.table(pd.DataFrame(results))
+            for s in results:
+                st.write(f"ID: {s['ID']} | Name: {s['Name']} | Age: {s['Age']} | Gender: {s['Gender']} | Course: {s['Course']}")
         else:
             st.warning("No matching students found.")
 
     st.subheader("Student Age Distribution")
     if st.session_state.students:
-        ages = [s["Age"] for s in st.session_state.students]
-        plt.figure(figsize=(6,4))
-        plt.hist(ages, bins=range(0, 121, 5), color='skyblue', edgecolor='black')
-        plt.xlabel("Age")
-        plt.ylabel("Number of Students")
-        plt.title("Age Distribution of Students")
-        st.pyplot(plt)
+        age_counts = {}
+        for s in st.session_state.students:
+            age_counts[s["Age"]] = age_counts.get(s["Age"], 0) + 1
+        st.bar_chart(age_counts)
     else:
         st.info("No students to visualize.")
