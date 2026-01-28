@@ -30,7 +30,7 @@ def search_students(query):
 
 # ------------------- Streamlit App -------------------
 st.set_page_config(page_title="🎓 Student Management System", layout="wide")
-st.title("🎓 Student Management System (No Pandas / No Matplotlib)")
+st.title("🎓 Student Management System")
 
 menu = ["Add Student", "View Students", "Update Student", "Delete Student", "Search & Stats"]
 choice = st.sidebar.selectbox("Menu", menu)
